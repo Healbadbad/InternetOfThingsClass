@@ -12,6 +12,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import datetime
 import csv
+from scipy import signal
 
 class IOTData():
     ''' A class to help pull and format data from Shimmer devices
@@ -26,9 +27,18 @@ class IOTData():
         self.post = ".csv" 
         self.devices = ["1B", "1F", "2B", "3B", "4B","5F"]
         self.dataset = "1B"
+        self.deviceInfo = []
         self.initdata(self.dataset)
         self.window = []
         self.windowSize =1024
+
+    def getDeviceInfo(self):
+        ''' TODO: Get the device info embedded in the first 3 lines of the CSV File '''
+        pass
+
+    def getDeviceID(self):
+        ''' Return the string representing the device's ID eg. E123'''
+        return self.deviceInfo[1][1].split("_")[1]
 
     def getWindow(self, index):
         while self.windowIndex < index:
@@ -36,12 +46,13 @@ class IOTData():
         return self.window
 
     def getNextWindow(self):
+        ''' returns an array with all variables, of length windowSize '''
         self.window = [[] for k in range(self.columnCount)]
         for k in range(self.windowSize):
             temp = self.reader.next()
             for k in range(len(temp)):
                 try:
-                    self.window[k].append(np.float32(float(temp[k])))
+                    self.window[k].append(float(temp[k])) # add np.float32here
                 except:
                     self.window[k].append(temp[k])
         self.windowIndex += 1
@@ -49,6 +60,7 @@ class IOTData():
         return self.window
 
     def getSelection(self, start, end):
+        ''' returns an array with all variables, starting and ending at  '''
         if self.dataIndex > start:
             self.initdata(self.dataset)
         while self.dataIndex < start:
@@ -59,7 +71,7 @@ class IOTData():
             temp = self.reader.next()
             for k in range(len(temp)):
                 try:
-                    self.window[k].append(np.float32(float(temp[k])))
+                    self.window[k].append(float(temp[k])) #np.float32 here
                 except:
                     self.window[k].append(temp[k])
             self.dataIndex +=1
@@ -71,6 +83,7 @@ class IOTData():
         return self.window
 
     def initdata(self, which):
+        ''' A function to reset the internal state of this class, and open the next file'''
         self.dataset = which
         self.csvfile = open(self.location + self.pre + which + self.post)
         self.reader = csv.reader(self.csvfile, delimiter = ',')
@@ -78,13 +91,39 @@ class IOTData():
         #remove first 3 pieces of data as identifiers
         for i in range(3):
             temp = self.reader.next()
+            self.deviceInfo.append(temp)
             for k in range(len(temp)):
                 self.info[k].append(temp[k])
             self.columnCount = len(temp)
         self.windowIndex = 0
         self.dataIndex = 0
 
+    def getUpdateRate(self):
+        ''' Get the sensor update rate in Hz '''
+        return len(self.window[0])/((float(self.window[0][-1]) - float(self.window[0][0]))/1000)
 
+    def featurePowerSpectruem(self):
+        return signal.welch(data[3], nperseg=device.windowSize)
+
+    def featureWindowMean(self):
+        temp = []
+        for dimension in self.window:
+            try:
+                temp.append(np.mean(dimension))
+            except:
+                pass
+
+        return temp
+
+    def featureWindowStdev(self):
+        temp = []
+        for dimension in self.window:
+            try:
+                temp.append(np.std(dimension))
+            except:
+                pass
+
+        return temp
 
 # data = [[] for k in range(10)]
 # for k in range(10):
@@ -128,7 +167,7 @@ class IOTData():
 #     print "Start Time:"
 #     print(datetime.datetime.fromtimestamp(
 #             float(data[k][0][0])/1000).strftime('%Y-%m-%d %H:%M:%S'))
-#     print "End Time"
+#     print "End Time";
 #     print(datetime.datetime.fromtimestamp(
 #             float(data[k][numsamples -1][0])/1000).strftime('%Y-%m-%d %H:%M:%S'))
 
