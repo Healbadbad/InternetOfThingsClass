@@ -21,12 +21,12 @@ class IOTData():
         just on the end of the dataset will be slow.
     ''' 
 
-    def __init__(self):
-        self.location = "Good_Shimmer_data/3_7_16/3_7_16_Data/"
-        self.pre = "Treadmill"
+    def __init__(self, devices, location = "Good_Shimmer_data/3_7_16/3_7_16_Data/"):
+        self.location= location
+        #self.pre = "Treadmill"
         self.post = ".csv" 
-        self.devices = ["1B", "1F", "2B", "3B", "4B","5F"]
-        self.dataset = "1B"
+        self.devices = devices
+        self.dataset = devices[0]
         self.deviceInfo = []
         self.initdata(self.dataset)
         self.window = []
@@ -85,12 +85,13 @@ class IOTData():
     def initdata(self, which):
         ''' A function to reset the internal state of this class, and open the next file'''
         self.dataset = which
-        self.csvfile = open(self.location + self.pre + which + self.post)
+        self.csvfile = open(self.location + which + self.post)
         self.reader = csv.reader(self.csvfile, delimiter = ',')
-        self.info = [[] for k in range(12)]
+        self.info = [[] for k in range(20)]
         #remove first 3 pieces of data as identifiers
         for i in range(3):
             temp = self.reader.next()
+            #print temp, len(temp)
             self.deviceInfo.append(temp)
             for k in range(len(temp)):
                 self.info[k].append(temp[k])
@@ -124,6 +125,18 @@ class IOTData():
                 pass
 
         return temp
+
+    def getLength(self):
+        sum = 0
+        while True:
+            try:
+                self.reader.next()
+                self.dataIndex+=1
+                sum +=1
+            except:
+                break
+        return sum
+                
 
 # data = [[] for k in range(10)]
 # for k in range(10):
