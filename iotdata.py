@@ -1,10 +1,4 @@
 # # Internet of Things Project
-
-# # The Data
-# 
-
-# The data is recorded at 50Hz and is formatted as follows:
-# 
 # unix timestamp,  ax,ay,az,  gx,gy,gz,  temperature,  mx,my,mz,
 
 
@@ -12,7 +6,11 @@ import matplotlib.pyplot as plt
 import numpy as np
 import datetime
 import csv
+import matlab.engine
+import matlab
 from scipy import signal
+import scipy
+import pickle
 
 class IOTData():
     ''' A class to help pull and format data from Shimmer devices
@@ -23,6 +21,7 @@ class IOTData():
 
     def __init__(self, devices, location = "Good_Shimmer_data/3_7_16/3_7_16_Data/"):
         self.location= location
+        self.matlabinit = False
         #self.pre = "Treadmill"
         self.post = ".csv" 
         self.devices = devices
@@ -30,14 +29,15 @@ class IOTData():
         self.deviceInfo = []
         self.initdata(self.dataset)
         self.window = []
-        self.windowSize =1024
+        self.windowSize = 256
+        self.windowFeatures = []
 
     def getDeviceInfo(self):
         ''' TODO: Get the device info embedded in the first 3 lines of the CSV File '''
         pass
 
     def getDeviceID(self):
-        ''' Return the string representing the device's ID eg. E123'''
+        ''' Returns the string representing the device's ID eg. E123'''
         return self.deviceInfo[1][1].split("_")[1]
 
     def getWindow(self, index):
@@ -82,29 +82,123 @@ class IOTData():
 
         return self.window
 
-    def initdata(self, which):
+    def initdata(self, which, windowSize = 256):
         ''' A function to reset the internal state of this class, and open the next file'''
         self.dataset = which
+        self.windowSize = windowSize
         self.csvfile = open(self.location + which + self.post)
         self.reader = csv.reader(self.csvfile, delimiter = ',')
-        self.info = [[] for k in range(20)]
         #remove first 3 pieces of data as identifiers
-        for i in range(3):
+        self.info = [[] for k in range(20)]
+        temp = self.reader.next()
+        for i in range(2):
             temp = self.reader.next()
+            self.columnCount = len(temp)
+            # print self.columnCount, temp
+
             #print temp, len(temp)
             self.deviceInfo.append(temp)
             for k in range(len(temp)):
                 self.info[k].append(temp[k])
-            self.columnCount = len(temp)
         self.windowIndex = 0
         self.dataIndex = 0
+        # print self.info
 
     def getUpdateRate(self):
         ''' Get the sensor update rate in Hz '''
         return len(self.window[0])/((float(self.window[0][-1]) - float(self.window[0][0]))/1000)
 
-    def featurePowerSpectruem(self):
-        return signal.welch(data[3], nperseg=device.windowSize)
+    def featurePowerSpectrumMean(self):
+        temp = []
+        for dimension in self.window:
+            try:
+                power = signal.welch(dimension, nperseg=self.windowSize) # nperseg=self.windowSize
+                temp.append(np.mean(power[1]))
+            except:
+                pass
+        return temp
+
+    def featurePowerSpectrumStdev(self):
+        temp = []
+        for dimension in self.window:
+            try:
+                power = signal.welch(dimension, nperseg=self.windowSize) # nperseg=self.windowSize
+                temp.append(np.std(power[1]))
+            except:
+                pass
+        return temp
+
+    def featurePowerSpectrumMax(self):
+        temp = []
+        for dimension in self.window:
+            try:
+                power = signal.welch(dimension, nperseg=self.windowSize) # nperseg=device.windowSize
+                current = -99999
+                maxindex = 0
+                for k in range(len(power[0])):
+                    if power[1][k] > current:
+                        current = power[1][k]
+                        maxindex = power[0][k]
+                temp.append(maxindex)
+            except:
+                pass
+        return temp
+
+    def featureFrequencySpectrumMean(self):
+        temp = []
+        for dimension in self.window:
+            try:
+                frequency = scipy.fftpack.fft(dimension).real # nperseg=device.windowSize
+                temp.append(np.mean(frequency))
+            except:
+                pass
+        return temp
+
+    def featureFrequencySpectrumStdev(self):
+        temp = []
+        for dimension in self.window:
+            try:
+                frequency = scipy.fftpack.fft(dimension).real # nperseg=device.windowSize
+                temp.append(np.std(frequency))
+            except:
+                pass
+        return temp
+
+    def featureFrequencySpectrumMax(self):
+        temp = []
+        for dimension in self.window:
+            try:
+                frequency = scipy.fftpack.fft(dimension).real # nperseg=device.windowSize
+                current = -99999
+                maxindex = 0
+                for k in range(len(frequency)):
+                    if frequency[k] > current:
+                        current = frequency[k]
+                        maxindex = k
+                temp.append(maxindex)
+            except:
+                pass
+        return temp
+
+    def featurezcr(self):
+        temp = []
+        for dimension in self.window:
+            try:
+                mean = np.mean(dimension)
+                normalized = []
+                for datum in dimension:
+                    normalized.append(datum - mean) 
+                count = 0
+                for k in range(len(normalized)-1):
+                    if normalized[k] > 0 and normalized[k+1] <0:
+                        count = count + 1
+
+                temp.append(count)
+            except:
+                pass
+
+        return temp
+
 
     def featureWindowMean(self):
         temp = []
@@ -126,7 +220,9 @@ class IOTData():
 
         return temp
 
+
     def getLength(self):
+        ''' Returns the number of data lines in the CSV '''
         sum = 0
         while True:
             try:
@@ -137,248 +233,206 @@ class IOTData():
                 break
         return sum
                 
+    def annotateARFF(self, labels):
+        ''' Write the current window to an ARFF File given labels, which
+            is an array of dictionaries containing an in
+            eg. {'Begin': 1458998110.329, 'End':1458998155.595, 'Label':'walking'}
+            (this currently assumes only one class per datapoint )
+        '''
+        file = open(self.dataset + 'annotated.arff', 'w')
+        file.write('@RELATION ' + self.dataset + '\n\n')
+        for k in range(self.columnCount -1):
+            file.write('@ATTRIBUTE' + self.info[k][0] + '\n')
 
-# data = [[] for k in range(10)]
-# for k in range(10):
-#     csvfile = open(location2 + pre2 + devices[k] + post2)
-#     reader = csv.reader(csvfile, delimiter = ',')
-    
-#     # Get rid of tag info
-#     for i in range(3):
-#         reader.next()
+        file.write('@ATTRIBUTE class {not_walking,walking,running}\n')
+        file.write('\n')
+        file.write('@DATA\n')
 
-#     for row in reader:
-#         data[k].append(row)
+        for k in range(len(self.window[0])):
+            currentclass = 'not_walking'
+            for interval in labels: 
+                if np.float32(self.window[0][k])/1000 > interval['Begin'] and np.float32(self.window[0][k])/1000 < interval['End']:
+                    currentclass = interval['Label']
+                    break
+            file.write("%.2f"%self.window[0][k] +',')
+            for i in range(self.columnCount-2):
+                file.write(str(self.window[i+1][k])+',')
+            file.write(currentclass + '\n')
 
-#     print len(data[k])
+        file.close()
 
-
-# # In[5]:
-
-
-# for k in range(10):
-#     timedata = []
-#     toPlot = [[],[],[]]
-#     numsamples = len(data[k])
-#     x = np.linspace(0,1,numsamples)
-#     timedata = []
-#     for i in range(numsamples):
-#         timedata.append(data[k][i][0])
-#         toPlot[0].append(data[k][i][1])
-#         toPlot[1].append(data[k][i][2])
-#         toPlot[2].append(data[k][i][3])
-
-#     toPlot[0] = np.array(toPlot[0]).astype(np.float)
-#     toPlot[1] = np.array(toPlot[1]).astype(np.float)
-#     toPlot[2] = np.array(toPlot[2]).astype(np.float)
-#     plt.figure(k)
-#     plt.plot(timedata,toPlot[0])
-#     plt.plot(timedata,toPlot[1])
-#     plt.plot(timedata,toPlot[2])
-
-#     #print the timestamp
-#     print "Start Time:"
-#     print(datetime.datetime.fromtimestamp(
-#             float(data[k][0][0])/1000).strftime('%Y-%m-%d %H:%M:%S'))
-#     print "End Time";
-#     print(datetime.datetime.fromtimestamp(
-#             float(data[k][numsamples -1][0])/1000).strftime('%Y-%m-%d %H:%M:%S'))
-
-#     plt.title('Accelerometer Data for ' + devices[k])
-
-
-# # I'm Writing a helpler function here to better display the plots for the accelerometer Data
-
-# # In[6]:
-
-# def plotSection(index, start, end):
-#     tempdata = [[],[],[]]
-#     xdata = np.linspace(start,end, end-start)
-#     for k in range(start,end):
-#         tempdata[0].append(data[index][k][1])
-#         tempdata[1].append(data[index][k][2])
-#         tempdata[2].append(data[index][k][3])
-#     print len(xdata), len(tempdata[0])
-#     #print the timestamp
-#     print "Start Time:"
-#     print(datetime.datetime.fromtimestamp(
-#             float(data[index][start][0])/1000).strftime('%Y-%m-%d %H:%M:%S'))
-#     print "End Time"
-#     print(datetime.datetime.fromtimestamp(
-#             float(data[index][end][0])/1000).strftime('%Y-%m-%d %H:%M:%S'))
-
-#     plt.plot(xdata,tempdata[0])
-#     plt.plot(xdata,tempdata[1])
-#     plt.plot(xdata,tempdata[2])
-
-
-# # In[7]:
-
-# plotSection(2, 22000,22200 )
-
-
-# # This graph looks pretty nice - It shows there are a few peaks that definitely look like steps
-
-# # # Filtering
-# # Steps will have a very high instantaneous rate of change. Hopefully, the acceleration of the z data stream will show some very high peaks, although this may require a bit of filtering before it will be pretty.
-
-# # In[8]:
-
-# class lowpassfilter:
-
-#     def __init__(self,RC,initialtime):
-#         "use RC for tuning the smoothmness"
-#         self.RC=RC
-#         self.t = initialtime
-#         self.x_old=0
-#         self.y_old=0
-#         self.z_old=0
-
-#     def filter(self,x,y,z,t):
-#         "return the low pass filtered valus -dt delta time current step"
-#         dt = t -self.t
-#         self.t = t
-#         k=dt / (self.RC + dt)
-#         res_x= self.x_old + k * (x - self.x_old)
-#         res_y= self.y_old + k * (y - self.y_old)
-#         res_z= self.z_old + k * (z - self.z_old)
-#         self.x_old=res_x
-#         self.y_old=res_y
-#         self.z_old=res_z
-#         return t, res_x,res_y,res_z
-
-
-# # In[9]:
-
-# # initialize a lowpass filter
-# # The value can be increased to filter out more information, but the data
-# # will need to be scaled up later (or normalized)
-# filter = lowpassfilter(50, float(data[2][0][0]) -1)
-# tempdata = []
-# for point in data[2]:
-#     tempdata.append(filter.filter(float(point[1]), float(point[2]), float(point[3]), float(point[0])))
-
-# # format and plot
-# newdata = []
-# for k in tempdata[22000:22200]:
-#     newdata.append(k[3])
-# plt.plot(range(len(newdata)), newdata - np.average(newdata))
-# plt.ylim([-2, 2])
-
-
-# # Definitely smoother, but more information is probably needed before throwing this in a learning algorithm
-# # 
-
-# # ## Welch
-# # power spectrum the signal
-
-# # In[21]:
-
-# from scipy import signal
-
-# envelope = np.abs(hilbert(newdata - np.average(newdata)))
-# powerSpectrum = signal.welch(range(len(newdata)) )
-# plt.plot(range(len(newdata)), newdata - np.average(newdata))
-# plt.plot(range(len(envelope)), envelope )
-# plt.ylim([-2, 2])
-
-
-# # ## Correlating the front and back of a treadmill
-# # For this, I will need to sync up the data between two of the shimmers that are on the same Treadmill based on their timestamps
-# # 
-# # I will use E8E3 and E887 (Treadmill 1, indexes 2 and 7) to look at how they line up
-# # 
-# # then E84F E833 (Treadmills 5 and 4) to see how the signal carries between treadmills.
-
-# # In[11]:
-
-# print data[2][22000][0]
-# print data[7][22000][0]
-
-
-# # E887 seems to have been started later, so i will use the first dataset to find a common point
-
-# # In[12]:
-
-# i = 0
-# while(data[2][i][0] < data[7][0][0]):
-#     i += 1
-# print i 
-# print data[2][i][0]
-# print data[7][i][0]
-
-
-# # ## Or not...
-# # The time values seem to be off, so i will find a common event and compare their timestamps
-
-# # In[13]:
-
-# timedata = [[],[]]
-# for row in data[2]:
-#     timedata[0].append(row[0])
-# for row in data[7]:
-#     timedata[1].append(row[0])
-
-# plt.plot(range(len(timedata[0])), timedata[0])
-# plt.plot(range(len(timedata[1])), timedata[1])
-
-
-# # Time should be increasing at the same rate, but time is clearly different between each device...
-
-# # In[14]:
-
-# print "Start Time:"
-# print(datetime.datetime.fromtimestamp(
-#         float(data[2][0][0])/1000).strftime('%Y-%m-%d %H:%M:%S'))
-# print "End Time"
-# print(datetime.datetime.fromtimestamp(
-#         float(data[2][10000][0])/1000).strftime('%Y-%m-%d %H:%M:%S'))
-
-# print "Start Time:"
-# print(datetime.datetime.fromtimestamp(
-#         float(data[7][0][0])/1000).strftime('%Y-%m-%d %H:%M:%S'))
-# print "End Time"
-# print(datetime.datetime.fromtimestamp(
-#         float(data[7][10000][0])/1000).strftime('%Y-%m-%d %H:%M:%S'))
-# print ""
-# print "Update rate for E8E3", 10000/((float(data[2][10000][0]) - float(data[2][0][0]))/1000), "Hz"
-# print "Update rate for E887", 10000/((float(data[7][10000][0]) - float(data[7][0][0]))/1000), "Hz"
-
-
-# # It seems one device is recording at 140Hz, while the other is recording at 51 Hz, since they both end at the same time
-
-# # In[15]:
-
-# tempdata1 = [[],[],[]]
-# for row in data[2]:
-#         tempdata1[0].append(row[1])
-#         tempdata1[1].append(row[2])
-#         tempdata1[2].append(row[3])
+    def generateAllFeaturesToARFF(self, labels, startindex, endindex):
+        # 0 7 14 15
+        self.getSelection(startindex, startindex)
+        file = open(self.dataset + 'featuresannotated.arff', 'w')
+        file.write('@RELATION ' + self.dataset + '\n\n')
         
-# tempdata2 = [[],[],[]]
+        # names of each attribute
+        features = [self.featurePowerSpectrumMean,
+                    self.featurePowerSpectrumStdev,
+                    self.featurePowerSpectrumMax,
+                    self.featureFrequencySpectrumMean,
+                    self.featureFrequencySpectrumStdev,
+                    self.featureFrequencySpectrumMax,
+                    self.featurezcr,
+                    self.featureWindowMean,
+                    self.featureWindowStdev]
 
-# for row in data[7]:
-#         tempdata2[0].append(row[1])
-#         tempdata2[1].append(row[2])
-#         tempdata2[2].append(row[3])
+        featureStrings = ['featurePowerSpectrumMean',
+                        'featurePowerSpectrumStdev',
+                        'featurePowerSpectrumMax',
+                        'featureFrequencySpectrumMean',
+                        'featureFrequencySpectrumStdev',
+                        'featureFrequencySpectrumMax',
+                        'featurezcr',
+                        'featureWindowMean',
+                        'featureWindowStdev']
 
-# print len(timedata[0]), len(tempdata1)
-# plt.plot(timedata[0], tempdata1[2])
-# plt.plot(timedata[1], tempdata2[2])
+        for feature in featureStrings:
+            for k in range(16):
+                file.write('@ATTRIBUTE ' + feature + str(k) + ' NUMERIC' + '\n')
+
+        file.write('@ATTRIBUTE class {not_walking,walking,running}\n')
+        file.write('\n')
+        file.write('@DATA\n')
+
+        for k in range((endindex - startindex)/self.windowSize):
+            self.getNextWindow()
+
+            for k in range(len(features)):
+                data = features[k]()
+                for datum in data:
+                    file.write(str(datum) + ',')
+
+            #write label
+            currentclass = 'not_walking'
+            for interval in labels: 
+                if np.float32(self.window[0][self.windowSize/2])/1000 > interval['Begin'] and np.float32(self.window[0][self.windowSize/2])/1000 < interval['End']:
+                    currentclass = interval['Label']
+                    break
+            file.write(currentclass)
+            file.write('\n')
+        file.close()
 
 
-# # In[16]:
+    def generateWindowFeatures(self):
+        ''' calculate the feature vector for the current window of data
+            This will be passed 
+        '''
+        self.windowFeatures = []
+        features = [self.featurePowerSpectrumMean,
+                    self.featurePowerSpectrumStdev,
+                    self.featurePowerSpectrumMax,
+                    self.featureFrequencySpectrumMean,
+                    self.featureFrequencySpectrumStdev,
+                    self.featureFrequencySpectrumMax,
+                    self.featurezcr,
+                    self.featureWindowMean,
+                    self.featureWindowStdev]
 
-# plt.plot(timedata[0][60000:60150], tempdata1[2][60000:60150])
-# plt.plot(timedata[1][21965:22020], tempdata2[2][21965:22020], color='red')
+        for k in range(len(features)):
+            data = features[k]()
+            for datum in data:
+                self.windowFeatures.append(datum)
+
+    def generateAllFeatures(self, labels, startindex, endindex):
+        self.getSelection(startindex, startindex)
+        file = open(self.dataset + 'featuresannotated.arff', 'w')
+        file.write('@RELATION ' + self.dataset + '\n\n')
+        
+        # names of each attribute
+        features = [self.featurePowerSpectrumMean,
+                    self.featurePowerSpectrumStdev,
+                    self.featurePowerSpectrumMax,
+                    self.featureFrequencySpectrumMean,
+                    self.featureFrequencySpectrumStdev,
+                    self.featureFrequencySpectrumMax,
+                    self.featurezcr,
+                    self.featureWindowMean,
+                    self.featureWindowStdev]
+
+        featureStrings = ['featurePowerSpectrumMean',
+                        'featurePowerSpectrumStdev',
+                        'featurePowerSpectrumMax',
+                        'featureFrequencySpectrumMean',
+                        'featureFrequencySpectrumStdev',
+                        'featureFrequencySpectrumMax',
+                        'featurezcr',
+                        'featureWindowMean',
+                        'featureWindowStdev']
+
+        for feature in featureStrings:
+            for k in range(16):
+                file.write('@ATTRIBUTE ' + feature + str(k) + ' NUMERIC' + '\n')
+
+        file.write('@ATTRIBUTE class {not_walking,walking,running}\n')
+        file.write('\n')
+        file.write('@DATA\n')
+
+        for k in range((endindex - startindex)/self.windowSize):
+            self.getNextWindow()
+
+            for k in range(len(features)):
+                data = features[k]()
+                for datum in data:
+                    file.write(str(datum) + ',')
+
+            #write label
+            currentclass = 'not_walking'
+            for interval in labels: 
+                if np.float32(self.window[0][self.windowSize/2])/1000 > interval['Begin'] and np.float32(self.window[0][self.windowSize/2])/1000 < interval['End']:
+                    currentclass = interval['Label']
+                    break
+            file.write(currentclass)
+            file.write('\n')
+        file.close()
 
 
-# # ## Envelope
-# # Envelope of our filtered signal
 
-# # In[17]:
+    ###############################
+    #
+    # Classification Functions
+    #
+    ###############################
 
-# from scipy.signal import hilbert
+    def loadClassifier(self, filename):
+        ''' loads a classifier saved pickle '''
 
-# analytic_signal = hilbert(signal)
+    def saveClassifier(self, filename):
+        ''' saves the generated classifier as a pickle object '''
 
+    def classifyWindow(self):
+        ''' Pass the data through the give Decision Tree '''
+
+
+
+    ###############################
+    #
+    # Start Matlab Functionality
+    #
+    ###############################
+
+    def startMatlab(self):
+        self.eng = matlab.engine.start_matlab()
+        self.matlabinit = True
+
+
+    def getMatlabFeature(self):
+        if not self.matlabinit:
+            return False
+        pass
+        # self.eng.workspace
+
+    def getSteps(self, data):
+        if not self.matlabinit:
+            print "Not initialized"
+            return
+        # self.eng.load('d:/iot/DataExaminer.m')
+        print self.eng.path('d:/iot/')
+        # self.eng.addpath('d:/iot/');
+        self.eng.workspace['data'] = data[1].tolist()
+        # self.eng.importdata('countSteps.m')
+
+        data2 = self.eng.eval('countSteps(data)')
+        print(data2)
+        return data2
