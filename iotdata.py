@@ -6,8 +6,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 import datetime
 import csv
-import matlab.engine
-import matlab
+# import matlab.engine
+# import matlab
+from ShimmerBluetooth import ShimmerBluetooth
 from scipy import signal
 import scipy
 import pickle
@@ -17,20 +18,30 @@ class IOTData():
         The data is basically stored as a linked list, so
         operations that are not simply sequential, or that operate
         just on the end of the dataset will be slow.
-    ''' 
+    '''
 
-    def __init__(self, devices, location = "Good_Shimmer_data/3_7_16/3_7_16_Data/"):
-        self.location= location
-        self.matlabinit = False
-        #self.pre = "Treadmill"
-        self.post = ".csv" 
-        self.devices = devices
-        self.dataset = devices[0]
-        self.deviceInfo = []
-        self.initdata(self.dataset)
-        self.window = []
-        self.windowSize = 256
-        self.windowFeatures = []
+    def __init__(self, devices, location = "Good_Shimmer_data/3_7_16/3_7_16_Data/", comport = None, windowsize = 256):
+        if comport == None:
+            self.streaming = False
+            self.location= location
+            self.matlabinit = False
+            #self.pre = "Treadmill"
+            self.post = ".csv"
+            self.devices = devices
+            self.dataset = devices[0]
+            self.deviceInfo = []
+            self.initdata(self.dataset)
+            self.window = []
+            self.windowSize = windowsize
+            self.windowFeatures = []
+        else:
+            #TODO: May need to update to support multiple shimmers
+            self.streaming = True
+            self.comport = comport
+            self.windowsize = windowsize
+            self.shimmer = ShimmerBluetooth(self.comport, self.windowsize) #Change to array of shimmers
+
+
 
     def getDeviceInfo(self):
         ''' TODO: Get the device info embedded in the first 3 lines of the CSV File '''
@@ -47,17 +58,20 @@ class IOTData():
 
     def getNextWindow(self):
         ''' returns an array with all variables, of length windowSize '''
-        self.window = [[] for k in range(self.columnCount)]
-        for k in range(self.windowSize):
-            temp = self.reader.next()
-            for k in range(len(temp)):
-                try:
-                    self.window[k].append(float(temp[k])) # add np.float32here
-                except:
-                    self.window[k].append(temp[k])
-        self.windowIndex += 1
-        self.dataIndex += self.windowSize
-        return self.window
+        if not self.streaming:
+            self.window = [[] for k in range(self.columnCount)]
+            for k in range(self.windowSize):
+                temp = self.reader.next()
+                for k in range(len(temp)):
+                    try:
+                        self.window[k].append(float(temp[k])) # add np.float32here
+                    except:
+                        self.window[k].append(temp[k])
+            self.windowIndex += 1
+            self.dataIndex += self.windowSize
+            return self.window
+        else:
+            self.window = self.shimmer.getFrame()
 
     def getSelection(self, start, end):
         ''' returns an array with all variables, starting and ending at  '''
@@ -78,7 +92,7 @@ class IOTData():
 
         for k in range(len(self.window)):
             self.window[k] = np.array(self.window[k])
-            # self.window[k] = np.array(self.window[k], np.float32)   
+            # self.window[k] = np.array(self.window[k], np.float32)
 
         return self.window
 
@@ -187,7 +201,7 @@ class IOTData():
                 mean = np.mean(dimension)
                 normalized = []
                 for datum in dimension:
-                    normalized.append(datum - mean) 
+                    normalized.append(datum - mean)
                 count = 0
                 for k in range(len(normalized)-1):
                     if normalized[k] > 0 and normalized[k+1] <0:
@@ -232,7 +246,7 @@ class IOTData():
             except:
                 break
         return sum
-                
+
     def annotateARFF(self, labels):
         ''' Write the current window to an ARFF File given labels, which
             is an array of dictionaries containing an in
@@ -250,7 +264,7 @@ class IOTData():
 
         for k in range(len(self.window[0])):
             currentclass = 'not_walking'
-            for interval in labels: 
+            for interval in labels:
                 if np.float32(self.window[0][k])/1000 > interval['Begin'] and np.float32(self.window[0][k])/1000 < interval['End']:
                     currentclass = interval['Label']
                     break
@@ -266,7 +280,7 @@ class IOTData():
         self.getSelection(startindex, startindex)
         file = open(self.dataset + 'featuresannotated.arff', 'w')
         file.write('@RELATION ' + self.dataset + '\n\n')
-        
+
         # names of each attribute
         features = [self.featurePowerSpectrumMean,
                     self.featurePowerSpectrumStdev,
@@ -302,11 +316,11 @@ class IOTData():
             for k in range(len(features)):
                 data = features[k]()
                 for datum in data:
-                    file.write(str(datum) + ',')
+                    file.write('i:' + str(k) + ' ' +str(datum) + ',')
 
             #write label
             currentclass = 'not_walking'
-            for interval in labels: 
+            for interval in labels:
                 if np.float32(self.window[0][self.windowSize/2])/1000 > interval['Begin'] and np.float32(self.window[0][self.windowSize/2])/1000 < interval['End']:
                     currentclass = interval['Label']
                     break
@@ -317,8 +331,10 @@ class IOTData():
 
     def generateWindowFeatures(self):
         ''' calculate the feature vector for the current window of data
-            This will be passed 
+            This will be passed
         '''
+
+        wantedFeatures = []
         self.windowFeatures = []
         features = [self.featurePowerSpectrumMean,
                     self.featurePowerSpectrumStdev,
@@ -339,7 +355,7 @@ class IOTData():
         self.getSelection(startindex, startindex)
         file = open(self.dataset + 'featuresannotated.arff', 'w')
         file.write('@RELATION ' + self.dataset + '\n\n')
-        
+
         # names of each attribute
         features = [self.featurePowerSpectrumMean,
                     self.featurePowerSpectrumStdev,
@@ -379,7 +395,7 @@ class IOTData():
 
             #write label
             currentclass = 'not_walking'
-            for interval in labels: 
+            for interval in labels:
                 if np.float32(self.window[0][self.windowSize/2])/1000 > interval['Begin'] and np.float32(self.window[0][self.windowSize/2])/1000 < interval['End']:
                     currentclass = interval['Label']
                     break
@@ -408,31 +424,21 @@ class IOTData():
 
     ###############################
     #
-    # Start Matlab Functionality
+    # Start Livestreaming Functionality
     #
     ###############################
 
-    def startMatlab(self):
-        self.eng = matlab.engine.start_matlab()
-        self.matlabinit = True
+    def classifyWindow(self):
+        ''' classify the current window as running, not running, or walking'''
+        self.windowFeatures
+        
 
-
-    def getMatlabFeature(self):
-        if not self.matlabinit:
-            return False
-        pass
-        # self.eng.workspace
-
-    def getSteps(self, data):
-        if not self.matlabinit:
-            print "Not initialized"
+    def classifyLive(self):
+        ''' constantly query the shimmer, and classify the received frame '''
+        if self.comport == None:
+            print "This isn't in Live mode!"
             return
-        # self.eng.load('d:/iot/DataExaminer.m')
-        print self.eng.path('d:/iot/')
-        # self.eng.addpath('d:/iot/');
-        self.eng.workspace['data'] = data[1].tolist()
-        # self.eng.importdata('countSteps.m')
+        # Take In window
 
-        data2 = self.eng.eval('countSteps(data)')
-        print(data2)
-        return data2
+
+

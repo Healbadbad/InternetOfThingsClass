@@ -1,0 +1,499 @@
+{
+	"auto_complete":
+	{
+		"selected_items":
+		[
+			[
+				"window",
+				"windowsize	param"
+			],
+			[
+				"get_",
+				"get_param_fun	statement"
+			],
+			[
+				"par",
+				"param_output"
+			],
+			[
+				"parse",
+				"parse-exp"
+			],
+			[
+				"subst-left-cps",
+				"subst-left-cps-2args"
+			],
+			[
+				"get_all",
+				"get_all_params	function"
+			],
+			[
+				"all",
+				"all_params	statement"
+			],
+			[
+				"get",
+				"get_all_params	function"
+			],
+			[
+				"in",
+				"in_layer	statement"
+			],
+			[
+				"getA",
+				"get_all_param_values	function"
+			],
+			[
+				"call",
+				"call-with-values"
+			],
+			[
+				"cps",
+				"cps-snlist-recur"
+			],
+			[
+				"apply",
+				"apply-continuation"
+			],
+			[
+				"inp",
+				"input_var	statement"
+			],
+			[
+				"ne",
+				"net_output	statement"
+			],
+			[
+				"out",
+				"out_data	statement"
+			]
+		]
+	},
+	"buffers":
+	[
+		{
+			"file": "liveClassify.py",
+			"settings":
+			{
+				"buffer_size": 374,
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "/C/Users/rhrt/Classes/iot/Shimmer_Csharp_API_v0.6/Source/ShimmerCapture/ShimmerBluetooth.cs",
+			"settings":
+			{
+				"buffer_size": 247221,
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "ShimmerBluetooth.py",
+			"settings":
+			{
+				"buffer_size": 2474,
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "iotdata.py",
+			"settings":
+			{
+				"buffer_size": 14878,
+				"line_ending": "Windows"
+			}
+		}
+	],
+	"build_system": "",
+	"build_system_choices":
+	[
+	],
+	"build_varint": "",
+	"command_palette":
+	{
+		"height": 81.0,
+		"last_filter": "join",
+		"selected_items":
+		[
+			[
+				"join",
+				"Floobits - Join Workspace"
+			],
+			[
+				"floo",
+				"Floobits - Share Directory (Private)"
+			],
+			[
+				"install",
+				"Package Control: Install Package"
+			],
+			[
+				"lint",
+				"Anaconda: Disable linting on this file"
+			],
+			[
+				"replsc",
+				"SublimeREPL: Scheme"
+			],
+			[
+				"keyb",
+				"Preferences: Key Bindings - User"
+			],
+			[
+				"anaconda s",
+				"Anaconda: Disable linting on this file"
+			],
+			[
+				"ke",
+				"Preferences: Key Bindings - Default"
+			],
+			[
+				"repl",
+				"SublimeREPL: Scheme"
+			],
+			[
+				"replsch",
+				"SublimeREPL: Scheme"
+			]
+		],
+		"width": 400.0
+	},
+	"console":
+	{
+		"height": 126.0,
+		"history":
+		[
+			"import urllib.request,os,hashlib; h = '2915d1851351e5ee549c20394736b442' + '8bc59f460fa1548d1514676163dafc88'; pf = 'Package Control.sublime-package'; ipp = sublime.installed_packages_path(); urllib.request.install_opener( urllib.request.build_opener( urllib.request.ProxyHandler()) ); by = urllib.request.urlopen( 'http://packagecontrol.io/' + pf.replace(' ', '%20')).read(); dh = hashlib.sha256(by).hexdigest(); print('Error validating download (got %s instead of %s), please try manual install' % (dh, h)) if dh != h else open(os.path.join( ipp, pf), 'wb' ).write(by)"
+		]
+	},
+	"distraction_free":
+	{
+		"menu_visible": true,
+		"show_minimap": false,
+		"show_open_files": false,
+		"show_tabs": false,
+		"side_bar_visible": false,
+		"status_bar_visible": false
+	},
+	"expanded_folders":
+	[
+		"/C/Users/rhrt/Projects/InternetOfThingsClass"
+	],
+	"file_history":
+	[
+		"/C/Users/rhrt/Projects/SwarmBot/boid.py",
+		"/C/Users/rhrt/Projects/SwarmBot/LearningModel.py",
+		"/C/Users/rhrt/Projects/SwarmBot/Starbot.py",
+		"/C/Users/rhrt/Projects/SwarmBot/CombatManager.py",
+		"/C/Users/rhrt/Classes/PLC/SchemeInterpreter/main.ss",
+		"/C/Users/rhrt/floobits/welcome.md",
+		"/C/Users/rhrt/Classes/iot/test1.py",
+		"/C/Users/rhrt/Classes/iot/tinyos-shimmer/apps/BtStream/python/BtStreamAccelGyroMag.py",
+		"/C/Users/rhrt/Classes/iot/Shimmer_Csharp_API_v0.6/Source/ShimmerCapture/ShimmerBluetooth.cs",
+		"/C/Users/rhrt/Classes/iot/Shimmer_Csharp_API_v0.6/Source/ShimmerCapture/Shimmer.cs",
+		"/C/Users/rhrt/Projects/cakeNet/XorTest.py",
+		"/C/Users/rhrt/.theanorc",
+		"/F/EFI/BOOT/refind.conf",
+		"/C/Users/rhrt/Classes/PLC/Test2/tcps.ss",
+		"/C/Users/rhrt/Classes/PLC/week0/8.ss",
+		"/C/Users/rhrt/Classes/PLC/Test2/tint.ss",
+		"/C/Users/rhrt/Classes/PLC/Test2/main.ss",
+		"/C/Users/rhrt/Classes/PLC/Test2/e2cps.ss",
+		"/C/Users/rhrt/Classes/PLC/week0/study.ss",
+		"/C/Users/rhrt/Classes/PLC/week0/15.ss",
+		"/C/Users/rhrt/Classes/PLC/week0/9.ss",
+		"/C/Users/rhrt/Classes/PLC/week0/16.ss",
+		"/C/Users/rhrt/AppData/Roaming/Sublime Text 3/Packages/User/Default (Windows).sublime-keymap",
+		"/C/Users/rhrt/Classes/PLC/week0/3.ss",
+		"/C/Users/rhrt/Classes/PLC/week0/4.ss",
+		"/C/Users/rhrt/Classes/PLC/week0/5.ss",
+		"/C/Users/rhrt/Classes/PLC/week0/11b.ss",
+		"/C/Users/rhrt/Classes/PLC/week0/6.ss",
+		"/C/Users/rhrt/Classes/PLC/week0/7.ss",
+		"/C/Users/rhrt/Classes/PLC/week0/11.ss",
+		"/C/Users/rhrt/Classes/PLC/week0/10.ss",
+		"/C/Users/rhrt/Classes/iot/tinyos-shimmer/apps/BtStream/python/accelCalRead.py",
+		"/C/Users/rhrt/Projects/InternetOfThingsClass/nnmodel.py",
+		"/C/Users/rhrt/AppData/Roaming/Sublime Text 3/Packages/Default/Default (Windows).sublime-keymap",
+		"/C/Users/rhrt/AppData/Roaming/Sublime Text 3/Packages/SublimeREPL/config/Scheme/Main.sublime-menu",
+		"/C/Users/rhrt/AppData/Roaming/Sublime Text 3/Packages/User/SublimeREPL.sublime-settings",
+		"/F/efi/boot/grubx64.efi"
+	],
+	"find":
+	{
+		"height": 34.0
+	},
+	"find_in_files":
+	{
+		"height": 0.0,
+		"where_history":
+		[
+		]
+	},
+	"find_state":
+	{
+		"case_sensitive": false,
+		"find_history":
+		[
+			"framesize",
+			"ser",
+			"wait_for_ack",
+			"writeBy",
+			"void writeby",
+			"writeBytes",
+			"start",
+			"get",
+			"str",
+			"extend-",
+			"prim-pr",
+			"prim-",
+			"closure",
+			"(",
+			"value",
+			"key",
+			"ins",
+			"wait_for_ack",
+			"\""
+		],
+		"highlight": true,
+		"in_selection": false,
+		"preserve_case": false,
+		"regex": false,
+		"replace_history":
+		[
+		],
+		"reverse": false,
+		"show_context": true,
+		"use_buffer2": true,
+		"whole_word": false,
+		"wrap": true
+	},
+	"folders":
+	[
+		{
+			"path": "C:\\Users\\rhrt\\Projects\\InternetOfThingsClass"
+		}
+	],
+	"groups":
+	[
+		{
+			"selected": 1,
+			"sheets":
+			[
+				{
+					"buffer": 0,
+					"file": "liveClassify.py",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 374,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								349,
+								349
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Python/Python.sublime-syntax"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 2,
+					"type": "text"
+				},
+				{
+					"buffer": 1,
+					"file": "/C/Users/rhrt/Classes/iot/Shimmer_Csharp_API_v0.6/Source/ShimmerCapture/ShimmerBluetooth.cs",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 247221,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								837,
+								837
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/C#/C#.sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 0,
+					"type": "text"
+				}
+			]
+		},
+		{
+			"selected": 0,
+			"sheets":
+			[
+				{
+					"buffer": 2,
+					"file": "ShimmerBluetooth.py",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 2474,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								1095,
+								1095
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Python/Python.sublime-syntax",
+							"tab_size": 3,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 133.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 1,
+					"type": "text"
+				},
+				{
+					"buffer": 3,
+					"file": "iotdata.py",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 14878,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								198,
+								214
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Python/Python.sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 3,
+					"type": "text"
+				}
+			]
+		}
+	],
+	"incremental_find":
+	{
+		"height": 27.0
+	},
+	"input":
+	{
+		"height": 31.0
+	},
+	"layout":
+	{
+		"cells":
+		[
+			[
+				0,
+				0,
+				1,
+				1
+			],
+			[
+				1,
+				0,
+				2,
+				1
+			]
+		],
+		"cols":
+		[
+			0.0,
+			0.400564971751,
+			1.0
+		],
+		"rows":
+		[
+			0.0,
+			1.0
+		]
+	},
+	"menu_visible": true,
+	"output.find_results":
+	{
+		"height": 0.0
+	},
+	"pinned_build_system": "",
+	"project": "",
+	"replace":
+	{
+		"height": 50.0
+	},
+	"save_all_on_build": true,
+	"select_file":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"select_project":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"select_symbol":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"selected_group": 0,
+	"settings":
+	{
+	},
+	"show_minimap": true,
+	"show_open_files": false,
+	"show_tabs": true,
+	"side_bar_visible": true,
+	"side_bar_width": 50.0,
+	"status_bar_visible": true,
+	"template_settings":
+	{
+	}
+}

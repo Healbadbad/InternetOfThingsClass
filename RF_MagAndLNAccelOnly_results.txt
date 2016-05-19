@@ -1,0 +1,99 @@
+=== Run information ===
+
+Scheme:weka.classifiers.trees.RandomForest -I 100 -K 0 -S 1
+Relation:     Ground_Truth_Treadmill1-weka.filters.unsupervised.attribute.Remove-R1,5-11,15-17,21-27,31-33,37-43,47-49,53-59,63-65,69-75,79-81,85-91,95-97,101-107,111-113,117-123,127-129,133-139,143-144
+Instances:    8123
+Attributes:   55
+              featurePowerSpectrumMean1
+              featurePowerSpectrumMean2
+              featurePowerSpectrumMean3
+              featurePowerSpectrumMean11
+              featurePowerSpectrumMean12
+              featurePowerSpectrumMean13
+              featurePowerSpectrumStdev1
+              featurePowerSpectrumStdev2
+              featurePowerSpectrumStdev3
+              featurePowerSpectrumStdev11
+              featurePowerSpectrumStdev12
+              featurePowerSpectrumStdev13
+              featurePowerSpectrumMax1
+              featurePowerSpectrumMax2
+              featurePowerSpectrumMax3
+              featurePowerSpectrumMax11
+              featurePowerSpectrumMax12
+              featurePowerSpectrumMax13
+              featureFrequencySpectrumMean1
+              featureFrequencySpectrumMean2
+              featureFrequencySpectrumMean3
+              featureFrequencySpectrumMean11
+              featureFrequencySpectrumMean12
+              featureFrequencySpectrumMean13
+              featureFrequencySpectrumStdev1
+              featureFrequencySpectrumStdev2
+              featureFrequencySpectrumStdev3
+              featureFrequencySpectrumStdev11
+              featureFrequencySpectrumStdev12
+              featureFrequencySpectrumStdev13
+              featureFrequencySpectrumMax1
+              featureFrequencySpectrumMax2
+              featureFrequencySpectrumMax3
+              featureFrequencySpectrumMax11
+              featureFrequencySpectrumMax12
+              featureFrequencySpectrumMax13
+              featurezcr1
+              featurezcr2
+              featurezcr3
+              featurezcr11
+              featurezcr12
+              featurezcr13
+              featureWindowMean1
+              featureWindowMean2
+              featureWindowMean3
+              featureWindowMean11
+              featureWindowMean12
+              featureWindowMean13
+              featureWindowStdev1
+              featureWindowStdev2
+              featureWindowStdev3
+              featureWindowStdev11
+              featureWindowStdev12
+              featureWindowStdev13
+              class
+Test mode:3-fold cross-validation
+
+=== Classifier model (full training set) ===
+
+Random forest of 100 trees, each constructed while considering 6 random features.
+Out of bag error: 0.0163
+
+
+
+Time taken to build model: 3.87 seconds
+
+=== Stratified cross-validation ===
+=== Summary ===
+
+Correctly Classified Instances        7974               98.1657 %
+Incorrectly Classified Instances       149                1.8343 %
+Kappa statistic                          0.9097
+Mean absolute error                      0.0277
+Root mean squared error                  0.1004
+Relative absolute error                 20.1159 %
+Root relative squared error             38.2751 %
+Total Number of Instances             8123     
+
+=== Detailed Accuracy By Class ===
+
+               TP Rate   FP Rate   Precision   Recall  F-Measure   ROC Area  Class
+                 0.993     0.091      0.988     0.993     0.991      0.996    not_walking
+                 0.853     0.003      0.914     0.853     0.883      0.998    walking
+                 0.913     0.005      0.932     0.913     0.923      0.996    running
+Weighted Avg.    0.982     0.081      0.981     0.982     0.981      0.996
+
+=== Confusion Matrix ===
+
+    a    b    c   <-- classified as
+ 7152   21   30 |    a = not_walking
+   33  256   11 |    b = walking
+   51    3  566 |    c = running
+
